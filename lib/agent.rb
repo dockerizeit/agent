@@ -45,9 +45,9 @@ class Agent
 
   def handle_response(data)
     if data["success"] == true
-      if data["action"] == 'auth'
+      if data["action"] == 'connection/auth'
         EM.add_periodic_timer keep_alive_period do
-          payload = { cmd: 'ping', at: Time.now.utc }.to_json
+          payload = { action: 'connection/ping', at: Time.now.utc }.to_json
           p [api_key, :ping, payload]
           @ws.send payload
         end
@@ -69,7 +69,7 @@ class Agent
       handler = COMMANDS[command]
       if handler
         response = handler.handle(operation, data)
-        response[:cmd] = action
+        response[:action] = action
         response[:req_id] = req_id
         json = response.to_json
         p [api_key, :message_response, json]
@@ -89,7 +89,7 @@ class Agent
       @ws.on :open do |event|
         hashed_key = Base64.encode64(Digest::SHA1.digest(api_key + api_secret))
         credentials = { key: api_key, challenge: hashed_key}
-        payload = {action: 'auth', name: agent_name, credentials: credentials}
+        payload = {action: 'connection/auth', name: agent_name, credentials: credentials}
         p [api_key, :open, payload]
         @ws.send(payload.to_json)
       end
