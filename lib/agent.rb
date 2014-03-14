@@ -4,12 +4,16 @@ require 'json'
 require 'digest/sha1'
 
 require 'commands'
+require 'responses'
 
 class Agent
-
-  COMMANDS = {
-    'containers' => Commands::Containers.new
-  }
+  ## ATTR READERS
+  [:api_key, :api_secret, :agent_name, :remote_api, :keep_alive_period].each do |m|
+    define_method m do
+      @config[m]
+    end
+  end
+  ## END ATTR READERS
 
   def initialize(config)
     @config = config
@@ -18,14 +22,16 @@ class Agent
     Signal.trap('KILL') { stop! }
   end
 
-
-  ## ATTR READERS
-  [:api_key, :api_secret, :agent_name, :remote_api, :keep_alive_period].each do |m|
-    define_method m do
-      @config[m]
-    end
+  def commands 
+    @commands ||= {
+      'containers' => Commands::Containers.new
+    } 
   end
-  ## END ATTR READERS
+  def responses
+    @responses ||= {
+      'connection' => Responses::Connection.new(self)
+    }
+  end
 
   def start!
     until stop_requested?
@@ -44,18 +50,18 @@ class Agent
   end
 
   def handle_response(data)
-    if data["success"] == true
-      if data["action"] == 'connection/auth'
-        EM.add_periodic_timer keep_alive_period do
-          payload = { action: 'connection/ping', at: Time.now.utc }.to_json
-          log :ping, payload
-          @ws.send payload
-        end
-      else
-        log :message, '/!\ Unknown action', data
-      end
+    success = data.delete("success") == true
+    action = data.delete('action')
+    if action.nil?
+      log :message, '/!\ No action', data
     else
-      log :message, '/!\ Failure response', data
+      command, operation = action.split('/', 2)
+      handler = responses[command]
+      if handler
+        handler.handle(operation, success, data)
+      else
+        log :message, :no_response_handler, action, success, data
+      end
     end
   end
 
@@ -66,14 +72,14 @@ class Agent
       log :message, '/!\ No action', data
     else
       command, operation = action.split('/', 2)
-      handler = COMMANDS[command]
+      handler = commands[command]
       if handler
         response = handler.handle(operation, data)
-        response[:action] = action
-        response[:req_id] = req_id
-        json = response.to_json
-        log :message_response, json
-        @ws.send(json)
+        response.merge! action: action, req_id: req_id
+        log :message_response, response
+        send(response)
+      else
+        log :message, :no_command_handler, action, data
       end
     end
   end
@@ -84,6 +90,7 @@ class Agent
 
   def loop
     EM.run do
+      log "Connecting to #{remote_api}"
       @ws = Faye::WebSocket::Client.new(remote_api)
 
       @ws.on :open do |event|
@@ -91,7 +98,7 @@ class Agent
         credentials = { key: api_key, challenge: hashed_key}
         payload = {action: 'connection/auth', name: agent_name, credentials: credentials}
         log :open, payload
-        @ws.send(payload.to_json)
+        send payload
       end
 
       @ws.on :message do |event|
@@ -112,6 +119,10 @@ class Agent
         EM::stop_event_loop
       end
     end
+  end
+
+  def send(payload)
+    @ws.send payload.to_json
   end
 
   def log(*arguments)
