@@ -16,6 +16,7 @@ class Agent
   ## END ATTR READERS
 
   def initialize(config)
+    reset_back_off_delay!
     @config = config
     @stop_requested = false
     Signal.trap('TERM') { stop! }
@@ -36,7 +37,7 @@ class Agent
   def start!
     until stop_requested?
       loop
-      sleep 1 unless stop_requested?
+      back_off! unless stop_requested?
     end
   end
 
@@ -94,6 +95,7 @@ class Agent
       @ws = Faye::WebSocket::Client.new(remote_api)
 
       @ws.on :open do |event|
+        reset_back_off_delay!
         hashed_key = Base64.encode64(Digest::SHA1.digest(api_key + api_secret))
         credentials = { key: api_key, challenge: hashed_key}
         payload = {action: 'connection/auth', name: agent_name, credentials: credentials}
@@ -129,4 +131,13 @@ class Agent
     p [Time.now, api_key, arguments]
   end
 
+  def reset_back_off_delay!
+    @back_off_delay = 1
+  end
+
+  def back_off!
+    sleep @back_off_delay
+    @back_off_delay = [@back_off_delay * 2, 300].min
+  end
+    
 end
