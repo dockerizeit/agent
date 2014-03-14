@@ -48,14 +48,14 @@ class Agent
       if data["action"] == 'connection/auth'
         EM.add_periodic_timer keep_alive_period do
           payload = { action: 'connection/ping', at: Time.now.utc }.to_json
-          p [api_key, :ping, payload]
+          log :ping, payload
           @ws.send payload
         end
       else
-        p [api_key, :message, '/!\ Unknown action', data]
+        log :message, '/!\ Unknown action', data
       end
     else
-      p [api_key, :message, '/!\ Failure response', data]
+      log :message, '/!\ Failure response', data
     end
   end
 
@@ -63,7 +63,7 @@ class Agent
     action = data.delete('action')
     req_id = data.delete('req_id')
     if action.nil?
-      p [api_key, :message, '/!\ No action', data]
+      log :message, '/!\ No action', data
     else
       command, operation = action.split('/', 2)
       handler = COMMANDS[command]
@@ -72,7 +72,7 @@ class Agent
         response[:action] = action
         response[:req_id] = req_id
         json = response.to_json
-        p [api_key, :message_response, json]
+        log :message_response, json
         @ws.send(json)
       end
     end
@@ -90,26 +90,32 @@ class Agent
         hashed_key = Base64.encode64(Digest::SHA1.digest(api_key + api_secret))
         credentials = { key: api_key, challenge: hashed_key}
         payload = {action: 'connection/auth', name: agent_name, credentials: credentials}
-        p [api_key, :open, payload]
+        log :open, payload
         @ws.send(payload.to_json)
       end
 
       @ws.on :message do |event|
         data = JSON.parse(event.data)
-        p [api_key, :message, event.data]
+        log :message, event.data
+        start = Time.now
         if is_response?(data)
           handle_response(data) 
         else
           handle_command(data)
         end
+        log :event_runtime, "%0.6fms" % (Time.now - start), event.data
       end
 
       @ws.on :close do |event|
-        p [api_key, :close, event.code, event.reason]
+        log :close, event.code, event.reason
         @ws = nil
         EM::stop_event_loop
       end
     end
+  end
+
+  def log(*arguments)
+    p [Time.now, api_key, arguments]
   end
 
 end
