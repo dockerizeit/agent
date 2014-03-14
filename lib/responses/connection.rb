@@ -12,7 +12,7 @@ class Responses::Connection < Responses::Base
   def start_pinging
     stop_pinging
     @ping_timer = EM.add_periodic_timer agent.keep_alive_period do
-      payload = { action: 'connection/ping', at: Time.now.utc }.to_json
+      payload = { action: 'connection/ping', at: Time.now.utc }
       agent.log :ping, payload
       agent.send payload
     end
