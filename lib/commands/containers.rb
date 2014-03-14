@@ -1,11 +1,5 @@
-class Commands::Containers
-  def handle(operation, data)
-    if self.respond_to?(operation)
-      self.send(operation, data)
-    else
-      raise "Unknown operation #{operation}"
-    end
-  end
+class Commands::Containers < Commands::Base
+  
 
   def index(data)
     response = {success: true, result: ["dummy result"]}
