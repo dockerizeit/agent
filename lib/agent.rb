@@ -2,6 +2,7 @@ require 'faye/websocket'
 require 'eventmachine'
 require 'json'
 require 'digest/sha1'
+require 'docker'
 
 require 'commands'
 require 'responses'
@@ -19,19 +20,9 @@ class Agent
     reset_back_off_delay!
     @config = config
     @stop_requested = false
+    init_docker
     Signal.trap('TERM') { stop! }
     Signal.trap('KILL') { stop! }
-  end
-
-  def commands 
-    @commands ||= {
-      'containers' => Commands::Containers.new
-    } 
-  end
-  def responses
-    @responses ||= {
-      'connection' => Responses::Connection.new(self)
-    }
   end
 
   def start!
@@ -44,6 +35,34 @@ class Agent
   def stop!
     @stop_requested = true
     EM.stop_event_loop if EM.reactor_running?
+  end
+
+  def send(payload)
+    @ws.send payload.to_json
+  end
+
+  def log(*arguments)
+    p [Time.now, api_key, arguments]
+  end
+
+  protected
+
+  def init_docker
+    Docker.url = "unix:///var/run/docker.sock" unless ENV['DOCKER_HOST']
+    puts "Using DOCKER_URL #{Docker.url}"
+    puts "Versions: #{Docker.version.inspect}"
+    puts "Info: #{Docker.info.inspect}"
+  end
+  
+  def commands 
+    @commands ||= {
+      'containers' => Commands::Containers.new(self)
+    } 
+  end
+  def responses
+    @responses ||= {
+      'connection' => Responses::Connection.new(self)
+    }
   end
 
   def stop_requested?
@@ -121,14 +140,6 @@ class Agent
         EM::stop_event_loop
       end
     end
-  end
-
-  def send(payload)
-    @ws.send payload.to_json
-  end
-
-  def log(*arguments)
-    p [Time.now, api_key, arguments]
   end
 
   def reset_back_off_delay!
