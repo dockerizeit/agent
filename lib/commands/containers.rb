@@ -2,10 +2,8 @@ class Commands::Containers < Commands::Base
   
 
   def index(data)
-    response = {success: true, result: ["dummy result"]}
+    containers = Docker::Container.all(true)
+    response = {success: true, result: containers.map(&:json) }
   end
-
-  def rm(data)
-    response = {success: false, message: "Not found"}
-  end
+  
 end
