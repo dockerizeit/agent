@@ -56,7 +56,7 @@ class Agent
   
   def commands 
     @commands ||= {
-      'containers' => Commands::Containers.new(self)
+      'containers' => Commands::Containers.new
     } 
   end
   def responses
