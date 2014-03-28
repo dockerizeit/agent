@@ -1,6 +1,6 @@
 class Responses::Base
   attr_reader :agent
-  
+
   def initialize(agent)
     @agent = agent
   end

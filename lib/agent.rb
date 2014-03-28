@@ -53,11 +53,11 @@ class Agent
     puts "Versions: #{Docker.version.inspect}"
     puts "Info: #{Docker.info.inspect}"
   end
-  
-  def commands 
+
+  def commands
     @commands ||= {
       'containers' => Commands::Containers.new
-    } 
+    }
   end
   def responses
     @responses ||= {
@@ -104,7 +104,7 @@ class Agent
     end
   end
 
-  def is_response?(data) 
+  def is_response?(data)
     return data.has_key? 'success'
   end
 
@@ -127,7 +127,7 @@ class Agent
         log :message, event.data
         start = Time.now
         if is_response?(data)
-          handle_response(data) 
+          handle_response(data)
         else
           handle_command(data)
         end
@@ -150,5 +150,5 @@ class Agent
     sleep @back_off_delay
     @back_off_delay = [@back_off_delay * 2, 300].min
   end
-    
+
 end
