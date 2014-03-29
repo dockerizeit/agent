@@ -4,7 +4,6 @@ class Responses::Connection < Responses::Base
     return start_pinging if success
     agent.log :auth, :fail, data
     agent.stop! if data["status"] == 401 # unauthorized
-      
   end
 
   protected
