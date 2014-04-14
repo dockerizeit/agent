@@ -1,3 +1,9 @@
+GIT
+  remote: git://github.com/1uptalent/combi.git
+  revision: 924e64a02db36a581906f0c1a14d2ffa12a1d6ec
+  specs:
+    combi (0.0.1)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -33,6 +39,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  combi!
   docker-api
   faye-websocket
   rspec-given
