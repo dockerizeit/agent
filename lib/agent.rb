@@ -4,6 +4,9 @@ require 'docker'
 
 require 'combi'
 
+require 'service/connection'
+require 'service/containers'
+
 class Agent
   ## ATTR READERS
   [:api_key, :api_secret, :agent_name, :remote_api, :keep_alive_period].each do |m|
@@ -20,8 +23,8 @@ class Agent
 
   def start!
     $bus = Combi::ServiceBus.for(:web_socket, remote_api: remote_api, handler: self)
-    $bus.add_service('connection', context: {agent: self})
-    $bus.add_service('containers')
+    $bus.add_service(Service::Connection, context: {agent: self})
+    $bus.add_service(Service::Containers)
     $bus.start!
   end
 

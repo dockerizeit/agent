@@ -1,5 +1,5 @@
 module Service
-  class Connection < Combi::Service
+  module Connection
 
     def actions
       [:connection]

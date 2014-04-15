@@ -1,5 +1,5 @@
 module Service
-  class Containers < Combi::Service
+  module Containers
 
     def actions
       [:containers]
