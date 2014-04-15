@@ -1,4 +1,3 @@
-require 'json'
 require 'digest/sha1'
 require 'docker'
 
@@ -34,6 +33,20 @@ class Agent
     message = {name: agent_name, credentials: credentials}
     $bus.request('connection', 'auth', message)
     log :open, agent_name, credentials
+  end
+
+  def start_pinging
+    stop_pinging
+    @ping_timer = EM.add_periodic_timer keep_alive_period do
+      message = {at: Time.now.utc}
+      $bus.request('connection', 'ping', message)
+      log :ping, message
+    end
+  end
+
+  def stop_pinging
+    return unless @ping_timer
+    @ping_timer.cancel
   end
 
   def log(*arguments)
