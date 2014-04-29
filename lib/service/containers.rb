@@ -11,5 +11,11 @@ module Service
       no_response
     end
 
+    def run(message)
+      container = Docker::Container.create('Image' => message['image'], 'Ports' => message['ports'])
+      container.start
+      container.json
+    end
+
   end
 end
