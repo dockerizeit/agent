@@ -2,6 +2,7 @@ require 'digest/sha1'
 require 'docker'
 
 require 'combi'
+require 'combi/reactor'
 
 require 'service/connection'
 require 'service/containers'
@@ -17,14 +18,20 @@ class Agent
 
   def initialize(config)
     @config = config
+    Combi::Reactor.start
     init_docker
+    init_buses
+  end
+
+  def init_buses
+    $bus = Combi::ServiceBus.for(:web_socket, remote_api: remote_api, handler: self)
+    $bus.start!
+    $bus.add_service(Service::Connection, context: {agent: self})
+    $bus.add_service(Service::Containers)
   end
 
   def start!
-    $bus = Combi::ServiceBus.for(:web_socket, remote_api: remote_api, handler: self)
-    $bus.add_service(Service::Connection, context: {agent: self})
-    $bus.add_service(Service::Containers)
-    $bus.start!
+    Combi::Reactor.join_thread
   end
 
   def on_open
