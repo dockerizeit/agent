@@ -53,7 +53,7 @@ class Agent
 
   def stop_pinging
     return unless @ping_timer
-    @ping_timer.cancel
+    EM::cancel_timer @ping_timer
   end
 
   def log(*arguments)
