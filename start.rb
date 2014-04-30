@@ -10,4 +10,9 @@ CONFIG = {
   keep_alive_period: [(ENV['KEEPALIVE'] || 10).to_i, 1].max
 }
 
+if CONFIG.values.any? &:nil?
+  STDERR << "Nil is not allowed for config options.\n\t#{CONFIG.inspect}\n"
+  exit 1
+end
+
 Agent.new(CONFIG).start!
