@@ -6,6 +6,7 @@ require 'combi/reactor'
 
 require 'service/connection'
 require 'service/containers'
+require 'service/images'
 
 class Agent
   ## ATTR READERS
@@ -28,6 +29,7 @@ class Agent
     $bus.start!
     $bus.add_service(Service::Connection, context: {agent: self})
     $bus.add_service(Service::Containers)
+    $bus.add_service(Service::Images)
   end
 
   def start!
