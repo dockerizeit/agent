@@ -5,8 +5,7 @@ module Service
     end
 
     def index(message)
-      response = Docker::Image.all.map(&:json)
-      response
+      Docker::Image.all(all: '1').map(&:info)
     end
 
   end
