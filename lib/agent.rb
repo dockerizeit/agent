@@ -9,6 +9,7 @@ require 'service/containers'
 require 'service/images'
 
 class Agent
+  attr_reader :token
   ## ATTR READERS
   [:api_key, :api_secret, :agent_name, :remote_api, :keep_alive_period].each do |m|
     define_method m do
@@ -37,6 +38,7 @@ class Agent
   end
 
   def on_open
+    @token = nil
     hashed_key = Base64.encode64(Digest::SHA1.digest(api_key + api_secret))
     credentials = { key: api_key, challenge: hashed_key}
     message = {name: agent_name, credentials: credentials}
@@ -44,10 +46,18 @@ class Agent
     log :open, agent_name, credentials
   end
 
+  def authorized(token)
+    @token = token
+    start_pinging
+  end
+
   def start_pinging
     stop_pinging
     @ping_timer = EM.add_periodic_timer keep_alive_period do
-      message = {at: Time.now.utc}
+      message = {
+        at: Time.now.utc,
+        token: token
+      }
       $bus.request('connection', 'ping', message)
       log :ping, message
     end

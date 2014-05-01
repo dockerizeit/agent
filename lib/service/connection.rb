@@ -6,7 +6,7 @@ module Service
     end
 
     def auth_ok(message)
-      agent.start_pinging
+      agent.authorized(message['token'])
       no_response
     end
 
