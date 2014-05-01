@@ -1,13 +1,9 @@
-PATH
-  remote: ../combi
-  specs:
-    combi (0.0.2)
-      yajl-ruby (~> 1.2.0)
-
 GEM
   remote: https://rubygems.org/
   specs:
     archive-tar-minitar (0.5.2)
+    combi (0.0.3)
+      yajl-ruby (~> 1.2.0)
     diff-lcs (1.2.5)
     docker-api (1.10.10)
       archive-tar-minitar
@@ -40,7 +36,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  combi!
+  combi (~> 0.0.3)
   docker-api (~> 1.10.10)
   faye-websocket
   rspec-given
