@@ -22,8 +22,8 @@ RUN gem install bundler --version 1.5.2
 #install the agent
 
 ENV KEEPALIVE 15
-ENV REMOTE_API wss://dockerize.it/
-ENV DOCKER_HOST http://172.17.42.1:4243/
+ENV REMOTE_API wss://api.dockerize.it/
+ENV DOCKER_HOST unix:///docker_host/api.sock
 
 RUN mkdir /dockerize_agent
 WORKDIR /dockerize_agent
