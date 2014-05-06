@@ -7,6 +7,7 @@ require 'combi/reactor'
 require 'service/connection'
 require 'service/containers'
 require 'service/images'
+require 'events'
 
 class Agent
   attr_reader :token
@@ -34,6 +35,7 @@ class Agent
   end
 
   def start!
+    @reader.join_thread if @reader
     Combi::Reactor.join_thread
   end
 
@@ -48,7 +50,12 @@ class Agent
 
   def authorized(token)
     @token = token
+    start_forwarding_events
     start_pinging
+  end
+
+  def start_forwarding_events
+    @reader = Events::notify_on $bus
   end
 
   def start_pinging
