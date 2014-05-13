@@ -5,10 +5,14 @@ module Service
       [:containers]
     end
 
+    GREYLIST = [
+      '^dockerizeit/agent\:(.*)$'
+    ]
+
     def index(message)
       containers = Docker::Container.all(true)
-      response = containers.map(&:json)
-      return response
+      response = containers.reject{|container| GREYLIST.map{|banned| container.info['Image'].match(banned)}.any? }
+      return response.map(&:json)
     end
 
     def run(message)
