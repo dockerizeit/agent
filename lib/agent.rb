@@ -10,6 +10,9 @@ require 'service/images'
 require 'events'
 
 class Agent
+
+  CHECK_CONNECTION_INTERVAL = 3
+
   attr_reader :token
   ## ATTR READERS
   [:api_key, :api_secret, :agent_name, :remote_api, :keep_alive_period].each do |m|
@@ -21,9 +24,11 @@ class Agent
 
   def initialize(config)
     @config = config
+    @delay_until_next_connection = 0
     Combi::Reactor.start
     init_docker
     init_buses
+    check_connection_to_server
   end
 
   def init_buses
@@ -40,12 +45,45 @@ class Agent
   end
 
   def on_open
+    @connected = true
+    @delay_until_next_connection = 0 # reset the delay for reconnections after a good connection
     @token = nil
     hashed_key = Base64.encode64(Digest::SHA1.digest(api_key + api_secret))
     credentials = { key: api_key, challenge: hashed_key}
     message = {name: agent_name, credentials: credentials}
     $bus.request('connection', 'auth', message)
     log :open, agent_name, credentials
+  end
+
+  def on_close
+    @connected = false
+  end
+
+  def check_connection_to_server
+    return unless @check_connection_timer.nil?
+    @check_connection_timer = EM.add_periodic_timer CHECK_CONNECTION_INTERVAL do
+      log :connection_status, @connected ? "ON" : "OFF"
+      if !@connected && @connection_timer.nil?
+        next_delay = delay_until_next_connection
+        log :next_connection, next_delay
+        @connection_timer = EM.add_timer next_delay do
+          $bus.start!
+          log :connecting
+          @connection_timer = nil
+        end
+      end
+    end
+  end
+
+  def disconnect_from_server
+    return unless @check_connection_timer
+    EM::cancel_timer @check_connection_timer
+    EM::cancel_timer @connection_timer unless @connection_timer.nil?
+  end
+
+  def delay_until_next_connection
+    @delay_until_next_connection = [1+@delay_until_next_connection*2, 30].min
+    rand*@delay_until_next_connection
   end
 
   def authorized(token)
