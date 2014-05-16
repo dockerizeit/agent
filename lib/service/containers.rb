@@ -18,8 +18,11 @@ module Service
 
     def index(message)
       containers = Docker::Container.all(true)
+      keys_to_hide = SECRETS_GREYLIST.dup
+      keys_to_hide << message['env_keys_to_hide']
+      keys_to_hide = keys_to_hide.flatten.compact.uniq
       response = filtered_containers(containers).map(&:json).map do |container|
-        anonymize_container_info(container)
+        anonymize_container_info(container, keys_to_hide)
       end
       return response
     end
@@ -42,10 +45,10 @@ module Service
       containers.reject{|container| GREYLIST.map{|banned| container.info['Image'].match(banned)}.any? }
     end
 
-    def anonymize_container_info(container)
+    def anonymize_container_info(container, keys_to_hide)
       container['Config']['Env'] = container['Config']['Env'].map do |env_config|
         key, value = env_config.split('=')
-        SECRETS_GREYLIST.each do |secret_match|
+        keys_to_hide.each do |secret_match|
           value = HIDDEN_SECRET if key.upcase.match(secret_match)
         end
         "#{key}=#{value}"
