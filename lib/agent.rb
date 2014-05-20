@@ -93,6 +93,7 @@ class Agent
   end
 
   def start_forwarding_events
+    @reader.stop! if @reader
     @reader = Events::notify_on $bus
   end
 
