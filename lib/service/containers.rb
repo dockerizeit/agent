@@ -32,7 +32,7 @@ module Service
       fields = %w{name Image Ports}
       params = fields.inject({}) do |result, param|
         value = message[param.downcase]
-        result[param] = value unless value.nil?
+        result[param] = value unless value.to_s.strip.empty?
         result
       end
       container = Docker::Container.create(params)
