@@ -52,7 +52,19 @@ class Agent
     @token = nil
     hashed_key = Base64.encode64(Digest::SHA1.digest(api_key + api_secret))
     credentials = { key: api_key, challenge: hashed_key}
-    message = {name: agent_name, credentials: credentials}
+    message = {
+      name: agent_name,
+      credentials: credentials,
+      agent: {
+        version: Agent::VERSION
+      },
+      host: {
+        docker: {
+          version: Docker.version,
+          info: Docker.info
+        }
+      }
+    }
     $bus.request('connection', 'auth', message)
     log :open, agent_name, credentials
   end
