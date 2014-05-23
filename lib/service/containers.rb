@@ -29,7 +29,13 @@ module Service
     end
 
     def run(message)
-      container = Docker::Container.create('Image' => message['image'], 'Ports' => message['ports'])
+      fields = %w{name Image Ports}
+      params = fields.inject({}) do |result, param|
+        value = message[param.downcase]
+        result[param] = value unless value.nil?
+        result
+      end
+      container = Docker::Container.create(params)
       container.start
       container.json
     end
