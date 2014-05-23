@@ -8,8 +8,10 @@ require 'service/connection'
 require 'service/containers'
 require 'service/images'
 require 'events'
+require 'version'
 
 class Agent
+  include Version
 
   CHECK_CONNECTION_INTERVAL = 3
 
