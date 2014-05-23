@@ -54,8 +54,8 @@ module Service
 
     def remove(message)
       container = Docker::Container.get(message['container_id'])
-      container.delete
       container.json
+      container.remove
     end
 
     private
