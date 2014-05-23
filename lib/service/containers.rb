@@ -52,6 +52,12 @@ module Service
       container.json
     end
 
+    def remove(message)
+      container = Docker::Container.get(message['container_id'])
+      container.delete
+      container.json
+    end
+
     private
 
     def filtered_containers(containers)
