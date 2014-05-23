@@ -17,7 +17,8 @@ module Service
     ]
 
     def index(message)
-      containers = Docker::Container.all(true)
+      include_stopped = message['include-stopped'] || true
+      containers = Docker::Container.all(all: include_stopped)
       keys_to_hide = SECRETS_GREYLIST.dup
       keys_to_hide << message['env_keys_to_hide']
       keys_to_hide = keys_to_hide.flatten.compact.uniq
