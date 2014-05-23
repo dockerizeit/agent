@@ -40,6 +40,12 @@ module Service
       container.json
     end
 
+    def start(message)
+      container = Docker::Container.get(message['container_id'])
+      container.start
+      container.json
+    end
+
     def stop(message)
       container = Docker::Container.get(message['container_id'])
       container.stop
