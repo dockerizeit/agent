@@ -29,14 +29,12 @@ module Service
     end
 
     def run(message)
-      fields = %w{name Image Ports}
-      params = fields.inject({}) do |result, param|
-        value = message[param.downcase]
-        result[param] = value unless value.to_s.strip.empty?
-        result
-      end
-      container = Docker::Container.create(params)
-      container.start
+      fields_for_create = {name: 'name', image: 'Image', command: 'Cmd'}
+      container = Docker::Container.create remap_fields(fields_for_create, message)
+
+      fields_for_start = {ports: 'PortBindings', binds: 'Binds'}
+      container.start remap_fields(fields_for_start, message)
+
       container.json
     end
 
@@ -73,6 +71,14 @@ module Service
         "#{key}=#{value}"
       end
       container
+    end
+
+    def remap_fields(fields, params)
+      fields.inject({}) do |result, (param, dockerName)|
+        value = params[param.to_s]
+        result[dockerName] = value if !value.to_s.strip.empty?
+        result
+      end
     end
 
   end
