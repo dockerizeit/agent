@@ -29,7 +29,7 @@ module Service
     end
 
     def run(message)
-      fields_for_create = {name: 'name', image: 'Image', command: 'Cmd'}
+      fields_for_create = {name: 'name', image: 'Image', command: 'Cmd', env: 'Env'}
       container = Docker::Container.create remap_fields(fields_for_create, message)
 
       fields_for_start = {ports: 'PortBindings', binds: 'Binds'}
