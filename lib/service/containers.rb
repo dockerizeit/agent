@@ -62,7 +62,7 @@ module Service
       container['Config']['Env'] = container['Config']['Env'].map do |env_config|
         key, value = env_config.split('=')
         keys_to_hide.each do |secret_match|
-          value = HIDDEN_SECRET if key.upcase.match(secret_match)
+          value = HIDDEN_SECRET if key.to_s.upcase.match(secret_match)
         end
         "#{key}=#{value}"
       end
