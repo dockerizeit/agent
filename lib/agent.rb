@@ -4,7 +4,6 @@ require 'docker'
 require 'combi'
 require 'combi/reactor'
 
-require 'service/connection'
 require 'service/containers'
 require 'service/images'
 require 'events'
@@ -36,7 +35,6 @@ class Agent
   def init_buses
     $bus = Combi::ServiceBus.for(:web_socket, remote_api: remote_api, handler: self)
     $bus.start!
-    $bus.add_service(Service::Connection, context: {agent: self})
     $bus.add_service(Service::Containers)
     $bus.add_service(Service::Images)
   end
@@ -45,6 +43,14 @@ class Agent
     @reader.join_thread if @reader
     Combi::Reactor.join_thread
   end
+
+  def stop!
+    @reader.stop! if @reader
+    stop_pinging
+    disconnect_from_server
+    EM::stop
+  end
+
 
   def on_open
     @connected = true
@@ -65,7 +71,14 @@ class Agent
         }
       }
     }
-    $bus.request('connection', 'auth', message)
+    response = $bus.request('connection', 'auth', message)
+    response.callback do |message|
+      authorized(message['token'])
+    end
+    response.errback do |message|
+      log :auth, :fail, message
+      stop! if message['error']['status'] == 401 # unauthorized
+    end
     log :open, agent_name, credentials
   end
 
