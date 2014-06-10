@@ -2,7 +2,7 @@ GEM
   remote: https://rubygems.org/
   specs:
     archive-tar-minitar (0.5.2)
-    combi (0.0.13)
+    combi (0.0.14)
       yajl-ruby (~> 1.2)
     diff-lcs (1.2.5)
     docker-api (1.11.1)
@@ -40,7 +40,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  combi (~> 0.0.13)
+  combi (~> 0.0.14)
   docker-api (~> 1.11)
   faye-websocket
   rspec-given
