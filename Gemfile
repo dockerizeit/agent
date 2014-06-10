@@ -1,6 +1,6 @@
 source "https://rubygems.org"
 
-gem 'docker-api', '~> 1.10.10', require: 'docker'
+gem 'docker-api', '~> 1.11', require: 'docker'
 
 # Service bus
 gem 'faye-websocket'
