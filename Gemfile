@@ -4,8 +4,7 @@ gem 'docker-api', '~> 1.11', require: 'docker'
 
 # Service bus
 gem 'faye-websocket'
-gem 'combi', '~> 0.0.14'
-#gem 'combi', path: '../combi'
+gem 'combi', '~> 0.0.18'
 
 group :test do
   gem 'rspec-given'
