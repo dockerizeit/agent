@@ -4,14 +4,14 @@ class Events::Reader
   # Parsed events are given to the event_handler_block as Docker::Event instances
   def start!(&event_handler_block)
     stop! if @thread
-    begin
-      @thread = Thread.new do
+    @thread = Thread.new do
+      begin
         Docker::Event.stream &event_handler_block
+      rescue => e
+        puts e.inspect
+        puts "Cannot connect docker stream"
+        retry
       end
-    rescue => e
-      puts e.inspect
-      puts "Cannot connect docker stream"
-      retry
     end
   end
 
