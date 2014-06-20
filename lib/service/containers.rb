@@ -36,7 +36,7 @@ module Service
 
     def start(message)
       container = Docker::Container.get(message['container_id'])
-      container.start
+      container.start message['params']
       container.json
     end
 
