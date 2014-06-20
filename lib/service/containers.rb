@@ -34,6 +34,11 @@ module Service
       container.json
     end
 
+    def create(message)
+      container = Docker::Container.create message['params']
+      container.json
+    end
+
     def start(message)
       container = Docker::Container.get(message['container_id'])
       container.start message['params']
