@@ -28,6 +28,7 @@ class Agent
     @delay_until_next_connection = 0
     Combi::Reactor.start
     init_docker
+    start_dns_server
     init_buses
     check_connection_to_server
   end
@@ -152,6 +153,23 @@ class Agent
     puts "Using DOCKER_URL #{Docker.url}"
     puts "Versions: #{Docker.version.inspect}"
     puts "Info: #{Docker.info.inspect}"
+  end
+
+  def start_dns_server
+    return if ENV['DNS_SERVICE'] == 'no'
+    EM::next_tick do
+      create_params = {
+        'name'  => 'dockerizeit_consul_server',
+        'Image' => 'germandz/consul',
+        'Hostname' => 'ditnode',
+        'Cmd'   => ['-server', '-bootstrap']
+      }
+      start_params = {
+        'PortBindings' => {'53/udp' => [{HostIp: '0.0.0.0', HostPort: '53'}]}
+      }
+      container = Docker::Container.create create_params
+      container.start start_params
+    end
   end
 
 end
