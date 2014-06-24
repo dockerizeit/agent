@@ -6,6 +6,7 @@ require 'combi/reactor'
 
 require 'service/containers'
 require 'service/images'
+require 'service/dns'
 require 'events'
 require 'version'
 
@@ -38,6 +39,7 @@ class Agent
     $bus.start!
     $bus.add_service(Service::Containers)
     $bus.add_service(Service::Images)
+    $bus.add_service(Service::Dns)
   end
 
   def start!
