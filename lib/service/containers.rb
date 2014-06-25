@@ -65,6 +65,20 @@ module Service
       {}
     end
 
+    def pause(message)
+      container = Docker::Container.get(message['container_id'])
+      raise "TODO: not yet implemented in swipely/docker-api: https://github.com/swipely/docker-api/issues/151"
+      container.pause
+      {}
+    end
+
+    def unpause(message)
+      container = Docker::Container.get(message['container_id'])
+      raise "TODO: not yet implemented in swipely/docker-api: https://github.com/swipely/docker-api/issues/151"
+      container.unpause
+      {}
+    end
+
     private
 
     def filtered_containers(containers)
