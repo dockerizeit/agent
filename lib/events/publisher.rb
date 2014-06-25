@@ -12,6 +12,7 @@ class Events::Publisher
   #     {"status":"start","id":"dfdf82bd3881","from":"base:latest","time":1374067924}
   #     {"status":"stop","id":"dfdf82bd3881","from":"base:latest","time":1374067966}
   #     {"status":"destroy","id":"dfdf82bd3881","from":"base:latest","time":1374067970}
+  #     {"status":"restart","id":"dfdf82bd3881","from":"base:latest","time":1374067973}
   def handle_event(event)
     puts "\t#{event}"
     # @amuino: Need a new thread to avoid loosing events
@@ -22,8 +23,9 @@ class Events::Publisher
       case event.status
       when 'create' then handle_create(event)
       when 'start' then handle_start(event)
-      when 'die'  then handle_die(event)
-      when 'stop'  then handle_stop(event)
+      when 'die' then handle_die(event)
+      when 'stop' then handle_stop(event)
+      when 'restart' then handle_restart(event)
       else
         puts "Unknown event: #{event.inspect}"
       end
@@ -55,4 +57,11 @@ class Events::Publisher
   def handle_stop(event)
     @bus.request 'containers', 'stopped', event: event.json, container: Docker::Container.get(event.id).json
   end
+
+  # Event fired when restarting an existing container
+  # For instance; docker restart STARTED_CONTAINER
+  def handle_restart(event)
+    @bus.request 'containers', 'restarted', event: event.json, container: Docker::Container.get(event.id).json
+  end
+
 end
