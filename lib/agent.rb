@@ -8,6 +8,7 @@ require 'service/containers'
 require 'service/images'
 require 'service/dns'
 require 'events'
+require 'dns'
 require 'version'
 
 class Agent
@@ -144,6 +145,10 @@ class Agent
     EM::cancel_timer @ping_timer
   end
 
+  def start_dns_server
+    Dns::Manager.start(enabled: ENV['DNS_SERVICE'] != 'no')
+  end
+
   def log(*arguments)
     p [Time.now, api_key, arguments]
   end
@@ -155,23 +160,6 @@ class Agent
     puts "Using DOCKER_URL #{Docker.url}"
     puts "Versions: #{Docker.version.inspect}"
     puts "Info: #{Docker.info.inspect}"
-  end
-
-  def start_dns_server
-    return if ENV['DNS_SERVICE'] == 'no'
-    EM::next_tick do
-      create_params = {
-        'name'  => 'dockerizeit_consul_server',
-        'Image' => 'germandz/consul',
-        'Hostname' => 'ditnode',
-        'Cmd'   => ['-server', '-bootstrap']
-      }
-      start_params = {
-        'PortBindings' => {'53/udp' => [{HostIp: '0.0.0.0', HostPort: '53'}]}
-      }
-      container = Docker::Container.create create_params
-      container.start start_params
-    end
   end
 
 end
