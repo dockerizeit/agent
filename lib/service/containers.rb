@@ -46,6 +46,13 @@ module Service
       container.json
     end
 
+    def restart(message)
+      puts message.inspect
+      container = Docker::Container.get(message['container_id'])
+      container.restart
+      container.json
+    end
+
     def stop(message)
       container = Docker::Container.get(message['container_id'])
       container.stop
