@@ -6,7 +6,8 @@ module Service
     end
 
     GREYLIST = [
-      '^dockerizeit/agent\:(.*)$'
+      '^dockerizeit/agent\:(.*)$',
+      '^dockerizeit/consul\:(.*)$'
     ]
 
     HIDDEN_SECRET = "*****"
