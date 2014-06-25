@@ -7,11 +7,11 @@ module Service
       [:dns]
     end
 
-    def register(node_name:, ip_address:)
-      manager.register_node node_name, ip_addres
+    def register(node_name:, ip_address:, **_unused_session)
+      manager.register_node node_name, ip_address
     end
 
-    def unregister(node_name:)
+    def unregister(node_name:, **_unused_session)
       manager.unregister_node node_name
     end
 
