@@ -146,7 +146,11 @@ class Agent
   end
 
   def start_dns_server
-    Dns::Manager.start(enabled: ENV['DNS_SERVICE'] != 'no')
+    Dns::Manager.start({
+      enabled: ENV['DNS_MANAGER_ENABLED'] != 'no',
+      container_image: ENV['DNS_MANAGER_IMAGE'],
+      container_name: ENV['DNS_MANAGER_NAME']
+    })
   end
 
   def log(*arguments)

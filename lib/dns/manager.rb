@@ -3,8 +3,6 @@ require 'eventmachine'
 
 class Dns::Manager
 
-  CONTAINER_NAME = 'dockerizeit_consul_main_node'
-
   attr_reader :options, :ready
 
   def self.start(options = {})
@@ -39,19 +37,26 @@ class Dns::Manager
   def start
     EM::next_tick do
       if options[:enabled]
+        image_name = options[:container_image]
         create_params = {
-          'name'  => CONTAINER_NAME,
-          'Image' => 'germandz/consul',
+          'name'  => options[:container_name],
+          'Image' => image_name,
           'Hostname' => 'consul-main-node',
           'Cmd'   => ['-server', '-bootstrap', '-log-level=trace']
         }
         start_params = {
           'PortBindings' => {'53/udp' => [{HostIp: '0.0.0.0', HostPort: '53'}]}
         }
-        container = Docker::Container.create create_params
-        container.start start_params
+        begin
+          Docker::Image.create fromImage: image_name
+          container = Docker::Container.create create_params
+          container.start start_params
+          ready.succeed
+        rescue => e
+          puts e.inspect
+          puts "Cannot start the dns manager"
+        end
       end
-      ready.succeed
     end
   end
 
@@ -66,7 +71,7 @@ class Dns::Manager
 
   def consul_ip_address
     return @consul_ip if @consul_ip
-    consul_container = Docker::Container.get(CONTAINER_NAME)
+    consul_container = Docker::Container.get(options[:container_name])
     @consul_ip = consul_container.json['NetworkSettings']['IPAddress']
   end
 
