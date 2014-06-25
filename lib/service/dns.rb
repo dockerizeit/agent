@@ -9,23 +9,15 @@ module Service
 
     def register(message)
       params = {
-        "Datacenter" => message['dns_datacenter'],
-        "Node" => message['dns_node'],
-        "Address" => message['service_ip'],
-        "Service" => {
-          "ID" => message['service_id'],
-          "Service" => message['service_name'],
-          "Port" => message['service_port'].to_i
-        }
+        "Node" => message['node_name'],
+        "Address" => message['ip_address']
       }
       consul_api(consul_ip, 'catalog/register', params)
     end
 
     def unregister(message)
       params = {
-        "Datacenter" => message['dns_datacenter'],
-        "Node" => message['dns_node'],
-        "ServiceId" => message['service_id']
+        "Node" => message['node_name']
       }
       consul_api(consul_ip, 'catalog/deregister', params)
     end
