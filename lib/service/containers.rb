@@ -17,63 +17,61 @@ module Service
       'TOKEN'
     ]
 
-    def index(message)
-      include_stopped = message['include-stopped'] || true
+    def index(include_stopped: true, env_keys_to_hide: [], req_id: nil, **_unused) # unused session param
       containers = Docker::Container.all(all: include_stopped)
       keys_to_hide = SECRETS_GREYLIST.dup
-      keys_to_hide << message['env_keys_to_hide']
-      keys_to_hide = keys_to_hide.flatten.compact.uniq
+      keys_to_hide += Array(env_keys_to_hide)
+      keys_to_hide = keys_to_hide.compact.uniq
       response = filtered_containers(containers).map(&:json).map do |container|
         anonymize_container_info(container, keys_to_hide)
       end
       return response
     end
 
-    def run(message)
-      container = Docker::Container.create message['create_params']
-      container.start message['start_params']
+    def run(create_params:, start_params:, **_unused) # unused session param
+      container = Docker::Container.create create_params
+      container.start message start_params
       container.json
     end
 
-    def create(message)
-      container = Docker::Container.create message['params']
+    def create(params:, **_unused) # unused session param
+      container = Docker::Container.create params
       container.json
     end
 
-    def start(message)
-      container = Docker::Container.get(message['container_id'])
-      container.start message['params']
+    def start(container_id:, params:, **_unused) # unused session param
+      container = Docker::Container.get(container_id)
+      container.start message params
       container.json
     end
 
-    def restart(message)
-      puts message.inspect
-      container = Docker::Container.get(message['container_id'])
+    def restart(container_id:, **_unused) # unused session param
+      container = Docker::Container.get container_id
       container.restart
       container.json
     end
 
-    def stop(message)
-      container = Docker::Container.get(message['container_id'])
+    def stop(container_id:, **_unused) # unused session param
+      container = Docker::Container.get container_id
       container.stop
       container.json
     end
 
-    def remove(message)
-      container = Docker::Container.get(message['container_id'])
+    def remove(container_id:, **_unused) # unused session param
+      container = Docker::Container.get container_id
       container.remove
       {}
     end
 
-    def pause(message)
-      container = Docker::Container.get(message['container_id'])
+    def pause(container_id:, **_unused) # unused session param
+      container = Docker::Container.get container_id
       raise "TODO: not yet implemented in swipely/docker-api: https://github.com/swipely/docker-api/issues/151"
       container.pause
       {}
     end
 
-    def unpause(message)
-      container = Docker::Container.get(message['container_id'])
+    def unpause(container_id:, **_unused) # unused session param
+      container = Docker::Container.get container_id
       raise "TODO: not yet implemented in swipely/docker-api: https://github.com/swipely/docker-api/issues/151"
       container.unpause
       {}

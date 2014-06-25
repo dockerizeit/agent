@@ -7,12 +7,12 @@ module Service
       [:dns]
     end
 
-    def register(message)
-      manager.register_node(message['node_name'], message['ip_address'])
+    def register(node_name:, ip_address:)
+      manager.register_node node_name, ip_addres
     end
 
-    def unregister(message)
-      manager.unregister_node(message['node_name'])
+    def unregister(node_name:)
+      manager.unregister_node node_name
     end
 
     def manager
