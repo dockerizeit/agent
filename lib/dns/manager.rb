@@ -106,7 +106,7 @@ class Dns::Manager
   end
 
   def consul_ip_address
-    return @consul_ip if @consul_ip
+    return @consul_ip if !@consul_ip.nil? && !@consul_ip.empty?
     consul_container = Docker::Container.get(options[:container_name])
     @consul_ip = consul_container.json['NetworkSettings']['IPAddress']
   end
