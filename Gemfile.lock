@@ -3,7 +3,7 @@ GEM
   specs:
     addressable (2.3.6)
     archive-tar-minitar (0.5.2)
-    combi (0.0.18)
+    combi (0.1.0)
       yajl-ruby (~> 1.2)
     cookiejar (0.3.2)
     diff-lcs (1.2.5)
@@ -51,7 +51,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  combi (~> 0.0.18)
+  combi (~> 0.1.0)
   docker-api (~> 1.11)
   em-http-request
   faye-websocket
