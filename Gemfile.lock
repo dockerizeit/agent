@@ -1,14 +1,24 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    addressable (2.3.6)
     archive-tar-minitar (0.5.2)
     combi (0.0.18)
       yajl-ruby (~> 1.2)
+    cookiejar (0.3.2)
     diff-lcs (1.2.5)
     docker-api (1.11.1)
       archive-tar-minitar
       excon (>= 0.34.0)
       json
+    em-http-request (1.1.2)
+      addressable (>= 2.3.4)
+      cookiejar
+      em-socksify (>= 0.3)
+      eventmachine (>= 1.0.3)
+      http_parser.rb (>= 0.6.0)
+    em-socksify (0.3.0)
+      eventmachine (>= 1.0.0.beta.4)
     eventmachine (1.0.3)
     excon (0.37.0)
     faye-websocket (0.7.3)
@@ -16,6 +26,7 @@ GEM
       websocket-driver (>= 0.3.1)
     given_core (3.5.4)
       sorcerer (>= 0.3.7)
+    http_parser.rb (0.6.0)
     json (1.8.1)
     rspec (3.0.0)
       rspec-core (~> 3.0.0)
@@ -42,5 +53,6 @@ PLATFORMS
 DEPENDENCIES
   combi (~> 0.0.18)
   docker-api (~> 1.11)
+  em-http-request
   faye-websocket
   rspec-given
