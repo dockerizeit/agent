@@ -54,33 +54,40 @@ class Dns::Manager
   def start
     EM::next_tick do
       if options[:enabled]
-        image_name = options[:container_image]
         begin
           container = Docker::Container.get options[:container_name]
-          container.start unless container.info['State']['Running']
-          warm_up
-        rescue Docker::Error::NotFoundError
-          create_params = {
-            'name'  => options[:container_name],
-            'Image' => image_name,
-            'Hostname' => options[:consul_node_name],
-            'Cmd'   => ['-server', '-bootstrap', '-log-level=trace']
-          }
-          start_params = {
-            'PortBindings' => {'53/udp' => [{HostIp: '0.0.0.0', HostPort: '53'}]}
-          }
-          begin
-            Docker::Image.create fromImage: image_name
-            container = Docker::Container.create create_params
-            container.start start_params
-            retry
-          rescue => e
-            puts e.inspect
-            puts "Cannot start the dns manager"
+          if container.info['State']['Running']
+            warm_up
+          else
+            container.remove
+            launch_container
           end
-
+        rescue Docker::Error::NotFoundError
+          launch_container
         end
       end
+    end
+  end
+
+  def launch_container
+    image_name = options[:container_image]
+    create_params = {
+      'name'  => options[:container_name],
+      'Image' => image_name,
+      'Hostname' => options[:consul_node_name],
+      'Cmd'   => ['-server', '-bootstrap', '-log-level=trace']
+    }
+    start_params = {
+      'PortBindings' => {'53/udp' => [{HostIp: '0.0.0.0', HostPort: '53'}]}
+    }
+    begin
+      Docker::Image.create fromImage: image_name
+      container = Docker::Container.create create_params
+      container.start start_params
+      start
+    rescue => e
+      puts e.inspect
+      puts "Cannot start the dns manager"
     end
   end
 
