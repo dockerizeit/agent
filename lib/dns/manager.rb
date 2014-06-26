@@ -57,6 +57,7 @@ class Dns::Manager
         image_name = options[:container_image]
         begin
           container = Docker::Container.get options[:container_name]
+          container.start unless container.info['State']['Running']
           warm_up
         rescue Docker::Error::NotFoundError
           create_params = {
