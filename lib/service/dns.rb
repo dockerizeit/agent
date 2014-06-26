@@ -15,6 +15,10 @@ module Service
       manager.unregister_node(message['dns_name'])
     end
 
+    def reset(message)
+      manager.reset_nodes(message['nodes_info'])
+    end
+
     def manager
       ::Dns::Manager.instance
     end

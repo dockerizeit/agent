@@ -26,6 +26,21 @@ class Dns::Manager
     }
   end
 
+  def reset_nodes(nodes_list)
+    ready.callback {
+      response = consul_api(:get, 'catalog/nodes')
+      current_nodes = JSON.parse(response.body).map{|n| n['Node']}
+      current_nodes = current_nodes.reject{|n| n == options[:consul_node_name]}
+      expired_nodes = current_nodes - nodes_list.map{|n| n['dns_name']}
+      expired_nodes.each do |expired|
+        unregister_node(expired)
+      end
+      nodes_list.each do |node_info|
+        register_node(node_info['dns_name'], node_info['ip_address'])
+      end
+    }
+  end
+
   private
 
   def initialize(options)
