@@ -13,6 +13,7 @@ module Service
 
     def unregister(dns_name:, **_unused_session)
       manager.unregister_node dns_name
+    end
 
     def reset(nodes_info:, **_unused_session)
       manager.reset_nodes nodes_info
