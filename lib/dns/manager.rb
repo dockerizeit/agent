@@ -1,5 +1,6 @@
 require 'net/http'
 require 'eventmachine'
+require 'em-http'
 
 class Dns::Manager
 
@@ -30,6 +31,7 @@ class Dns::Manager
   def initialize(options)
     @options = options
     @options[:enabled] ||= true
+    @options[:consul_node_name] ||= 'consul-main-node'
     start
     @ready = EM::DefaultDeferrable.new
   end
@@ -38,25 +40,45 @@ class Dns::Manager
     EM::next_tick do
       if options[:enabled]
         image_name = options[:container_image]
-        create_params = {
-          'name'  => options[:container_name],
-          'Image' => image_name,
-          'Hostname' => 'consul-main-node',
-          'Cmd'   => ['-server', '-bootstrap', '-log-level=trace']
-        }
-        start_params = {
-          'PortBindings' => {'53/udp' => [{HostIp: '0.0.0.0', HostPort: '53'}]}
-        }
         begin
-          Docker::Image.create fromImage: image_name
-          container = Docker::Container.create create_params
-          container.start start_params
-          ready.succeed
-        rescue => e
-          puts e.inspect
-          puts "Cannot start the dns manager"
+          container = Docker::Container.get options[:container_name]
+          warm_up
+        rescue Docker::Error::NotFoundError
+          create_params = {
+            'name'  => options[:container_name],
+            'Image' => image_name,
+            'Hostname' => options[:consul_node_name],
+            'Cmd'   => ['-server', '-bootstrap', '-log-level=trace']
+          }
+          start_params = {
+            'PortBindings' => {'53/udp' => [{HostIp: '0.0.0.0', HostPort: '53'}]}
+          }
+          begin
+            Docker::Image.create fromImage: image_name
+            container = Docker::Container.create create_params
+            container.start start_params
+            retry
+          rescue => e
+            puts e.inspect
+            puts "Cannot start the dns manager"
+          end
+
         end
       end
+    end
+  end
+
+  def warm_up
+    http = EventMachine::HttpRequest.new("http://#{consul_ip_address}:#{consul_api_port}/v1/catalog/nodes").get
+    http.callback do |info|
+      if info.response_header.status == 200
+        ready.succeed
+      else
+        EM::add_timer(1) { warm_up }
+      end
+    end
+    http.errback do
+      EM::add_timer(1) { warm_up }
     end
   end
 
