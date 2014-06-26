@@ -61,7 +61,6 @@ class Dns::Manager
   end
 
   def consul_api(operation, params)
-    consul_api_port = 8500
     req = Net::HTTP::Put.new("/v1/#{operation}")
     req.body = params.to_json
     Net::HTTP.new(consul_ip_address, consul_api_port).start do |http|
@@ -73,6 +72,10 @@ class Dns::Manager
     return @consul_ip if @consul_ip
     consul_container = Docker::Container.get(options[:container_name])
     @consul_ip = consul_container.json['NetworkSettings']['IPAddress']
+  end
+
+  def consul_api_port
+    8500
   end
 
 end
