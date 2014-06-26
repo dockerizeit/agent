@@ -8,11 +8,11 @@ module Service
     end
 
     def register(message)
-      manager.register_node(message['node_name'], message['ip_address'])
+      manager.register_node(message['dns_name'], message['ip_address'])
     end
 
     def unregister(message)
-      manager.unregister_node(message['node_name'])
+      manager.unregister_node(message['dns_name'])
     end
 
     def manager
