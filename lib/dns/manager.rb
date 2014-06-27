@@ -51,6 +51,9 @@ class Dns::Manager
     @options = options
     @options[:enabled] ||= true
     @options[:consul_node_name] ||= 'consul-main-node'
+    # The defaults for container_image and container_name must match the ones in the Dockerfile
+    @options[:container_image] ||= 'dockerizeit/consul'
+    @options[:container_name] ||= 'dockerizeit_consul_main_node'
     start
     @ready = EM::DefaultDeferrable.new
   end
