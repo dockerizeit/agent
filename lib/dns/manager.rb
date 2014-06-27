@@ -41,6 +41,10 @@ class Dns::Manager
     }
   end
 
+  def dns_server
+    dns_server_ip if options[:enabled]
+  end
+
   private
 
   def initialize(options)
@@ -121,6 +125,12 @@ class Dns::Manager
 
   def consul_api_port
     8500
+  end
+
+  def dns_server_ip
+    return @dns_server_ip if !@dns_server_ip.nil? && !@dns_server_ip.empty?
+    consul_container = Docker::Container.get(options[:container_name])
+    @dns_server_ip = consul_container.json['NetworkSettings']['Gateway']
   end
 
 end

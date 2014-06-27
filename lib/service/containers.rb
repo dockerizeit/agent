@@ -41,6 +41,8 @@ module Service
 
     def start(container_id:, params: {}, **_unused_session)
       container = Docker::Container.get(container_id)
+      dns_server ::Dns::Manager.instance.dns_server
+      params['Dns'] ||= dns_server if dns_server
       container.start params
       container.json
     end
