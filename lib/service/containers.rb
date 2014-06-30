@@ -69,14 +69,12 @@ module Service
 
     def pause(container_id:, **_unused_session)
       container = Docker::Container.get container_id
-      raise "TODO: not yet implemented in swipely/docker-api: https://github.com/swipely/docker-api/issues/151"
       container.pause
       {}
     end
 
     def unpause(container_id:, **_unused_session)
       container = Docker::Container.get container_id
-      raise "TODO: not yet implemented in swipely/docker-api: https://github.com/swipely/docker-api/issues/151"
       container.unpause
       {}
     end
