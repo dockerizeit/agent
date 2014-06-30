@@ -30,6 +30,8 @@ module Service
 
     def run(create_params:, start_params:, **_unused_session)
       container = Docker::Container.create create_params
+      dns_server = ::Dns::Manager.instance.dns_server
+      start_params['Dns'] ||= dns_server if dns_server
       container.start start_params
       container.json
     end
@@ -41,7 +43,7 @@ module Service
 
     def start(container_id:, params: {}, **_unused_session)
       container = Docker::Container.get(container_id)
-      dns_server ::Dns::Manager.instance.dns_server
+      dns_server = ::Dns::Manager.instance.dns_server
       params['Dns'] ||= dns_server if dns_server
       container.start params
       container.json
