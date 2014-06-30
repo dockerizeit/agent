@@ -7,9 +7,9 @@ GEM
       yajl-ruby (~> 1.2)
     cookiejar (0.3.2)
     diff-lcs (1.2.5)
-    docker-api (1.11.1)
+    docker-api (1.13.0)
       archive-tar-minitar
-      excon (>= 0.34.0)
+      excon (>= 0.37.0)
       json
     em-http-request (1.1.2)
       addressable (>= 2.3.4)
@@ -52,7 +52,7 @@ PLATFORMS
 
 DEPENDENCIES
   combi (~> 0.1.0)
-  docker-api (~> 1.11)
+  docker-api (~> 1.13)
   em-http-request
   faye-websocket
   rspec-given
