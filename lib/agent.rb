@@ -88,6 +88,7 @@ class Agent
 
   def on_close
     change_connection_status connected: false
+    stop_pinging
   end
 
   def change_connection_status(connected:)
