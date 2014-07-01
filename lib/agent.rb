@@ -57,7 +57,7 @@ class Agent
 
 
   def on_open
-    @connected = true
+    change_connection_status connected: true
     @delay_until_next_connection = 0 # reset the delay for reconnections after a good connection
     @token = nil
     hashed_key = Base64.encode64(Digest::SHA1.digest(api_key + api_secret))
@@ -87,13 +87,18 @@ class Agent
   end
 
   def on_close
-    @connected = false
+    change_connection_status connected: false
+  end
+
+  def change_connection_status(connected:)
+    return if @connected == connected
+    @connected = connected
+    log :connection_status, @connected ? "ON" : "OFF"
   end
 
   def check_connection_to_server
     return unless @check_connection_timer.nil?
     @check_connection_timer = EM.add_periodic_timer CHECK_CONNECTION_INTERVAL do
-      log :connection_status, @connected ? "ON" : "OFF"
       if !@connected && @connection_timer.nil?
         next_delay = delay_until_next_connection
         log :next_connection, next_delay
