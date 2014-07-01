@@ -36,7 +36,7 @@ class Dns::Manager
         unregister_node(expired)
       end
       nodes_list.each do |node_info|
-        register_node(node_info['dns_name'], node_info['ip_address'])
+        register_node(node_info[:dns_name], node_info[:ip_address])
       end
     }
   end

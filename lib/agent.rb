@@ -77,11 +77,11 @@ class Agent
     }
     response = $bus.request('connection', 'auth', message)
     response.callback do |message|
-      authorized(message['token'])
+      authorized(message[:token])
     end
     response.errback do |message|
       log :auth, :fail, message
-      stop! if message['error']['status'] == 401 # unauthorized
+      stop! if message[:error][:status] == 401 # unauthorized
     end
     log :open, agent_name, credentials
   end
