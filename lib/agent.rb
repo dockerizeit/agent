@@ -84,8 +84,9 @@ class Agent
     end
     response.errback do |message|
       log :auth, :fail, message
+      unrecoverable_errors = [401, 426]
       if message[:error].is_a? Hash
-        stop! if message[:error][:status] == 401 # unauthorized
+        stop! if unrecoverable_errors.include? message[:error][:status]
       end
     end
     log :open, agent_name, credentials
