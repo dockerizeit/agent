@@ -81,7 +81,9 @@ class Agent
     end
     response.errback do |message|
       log :auth, :fail, message
-      stop! if message[:error][:status] == 401 # unauthorized
+      if message[:error].is_a? Hash
+        stop! if message[:error][:status] == 401 # unauthorized
+      end
     end
     log :open, agent_name, credentials
   end
