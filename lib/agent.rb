@@ -29,10 +29,13 @@ class Agent
     @config = config
     @delay_until_next_connection = 0
     Combi::Reactor.start
-    init_docker
-    start_dns_server
-    init_buses
-    check_connection_to_server
+    if init_docker
+      start_dns_server
+      init_buses
+      check_connection_to_server
+    else
+      stop!
+    end
   end
 
   def init_buses
@@ -169,9 +172,13 @@ class Agent
 
   def init_docker
     Docker.url = "unix:///var/run/docker.sock" unless ENV['DOCKER_HOST']
-    puts "Using DOCKER_URL #{Docker.url}"
-    puts "Versions: #{Docker.version.inspect}"
-    puts "Info: #{Docker.info.inspect}"
+    log "Using DOCKER_URL #{Docker.url}"
+    log "Versions: #{Docker.version.inspect}"
+    log "Info: #{Docker.info.inspect}"
+    true
+  rescue => e
+    log "Error connecting to docker", e.message
+    false
   end
 
 end
