@@ -29,6 +29,7 @@ module Service
     end
 
     def run(create_params:, start_params:, **_unused_session)
+      create_params['name'] ||= create_params[:name]
       container = Docker::Container.create create_params
       dns_server = ::Dns::Manager.instance.dns_server
       start_params[:Dns] ||= dns_server if dns_server
@@ -37,6 +38,7 @@ module Service
     end
 
     def create(params:, **_unused_session)
+      params['name'] ||= params[:name]
       container = Docker::Container.create params
       container.json
     end
