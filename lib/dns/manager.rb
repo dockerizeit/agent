@@ -116,7 +116,7 @@ class Dns::Manager
     req = Net::HTTP::Put.new("/v1/#{operation}")
     req.body = params.to_json
     Net::HTTP.new(consul_ip_address, consul_api_port).start do |http|
-      response = http.request req
+      http.request(req) || ""
     end
   end
 
