@@ -15,4 +15,5 @@ if CONFIG.values.any? &:nil?
   exit 1
 end
 
-Agent.new(CONFIG).start!
+$agent = Agent.new(CONFIG)
+$agent.start!

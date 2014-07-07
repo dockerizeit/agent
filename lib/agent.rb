@@ -7,6 +7,7 @@ require 'combi/reactor'
 require 'service/containers'
 require 'service/images'
 require 'service/dns'
+require 'service/tunnels'
 require 'events'
 require 'dns'
 require 'version'
@@ -16,7 +17,7 @@ class Agent
 
   CHECK_CONNECTION_INTERVAL = 3
 
-  attr_reader :token
+  attr_reader :token, :tunnel_public_key, :tunnel_private_key
   ## ATTR READERS
   [:api_key, :api_secret, :agent_name, :remote_api, :keep_alive_period].each do |m|
     define_method m do
@@ -30,6 +31,7 @@ class Agent
     @delay_until_next_connection = 0
     Combi::Reactor.start
     if init_docker
+      init_tunnels
       start_dns_server
       init_buses
       check_connection_to_server
@@ -38,12 +40,19 @@ class Agent
     end
   end
 
+  def init_tunnels
+    pair = OpenSSL::PKey::RSA.new 2048
+    @tunnel_private_key = pair.to_s
+    @tunnel_public_key = pair.public_key.to_s
+  end
+
   def init_buses
     $bus = Combi::ServiceBus.for(:web_socket, remote_api: remote_api, handler: self)
     $bus.start!
     $bus.add_service(Service::Containers)
     $bus.add_service(Service::Images)
     $bus.add_service(Service::Dns)
+    $bus.add_service(Service::Tunnels)
   end
 
   def start!
@@ -57,7 +66,6 @@ class Agent
     disconnect_from_server
     EM::stop
   end
-
 
   def on_open
     change_connection_status connected: true
@@ -76,7 +84,8 @@ class Agent
           version: Docker.version,
           info: Docker.info
         }
-      }
+      },
+      tunnel_key: tunnel_public_key
     }
     response = $bus.request('connection', 'auth', message)
     response.callback do |message|
