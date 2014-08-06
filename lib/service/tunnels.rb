@@ -9,14 +9,7 @@ module Service
       ssh_server = ENV['TUNNEL_SERVER']
       name = "tunnel-client-#{tunnel_id}"
       source_container = Docker::Container.get container_id
-      begin
-        container = Docker::Container.get name
-        if container
-          container.stop if container.info['State']['Running']
-          container.remove
-        end
-      rescue Docker::Error::NotFoundError
-      end
+      container_remove name
       create_params = {
         'name' => name,
         'Image' => ENV['TUNNEL_CLIENT_IMAGE'],
@@ -32,5 +25,35 @@ module Service
       container.start
     end
 
+    def stop(tunnel_id:, **_unused_session)
+      container_stop "tunnel-client-#{tunnel_id}"
+    end
+
+    def remove(tunnel_id:, **_unused_session)
+      container_remove "tunnel-client-#{tunnel_id}"
+    end
+
+    private
+
+    def container_stop(name_or_id)
+      begin
+        container = Docker::Container.get name_or_id
+        if container
+          container.stop if container.info['State']['Running']
+        end
+      rescue Docker::Error::NotFoundError
+      end
+      container
+    end
+
+    def container_remove(name_or_id)
+      container = container_stop name_or_id
+      begin
+        container.remove if container
+      rescue Docker::Error::NotFoundError
+      end
+    end
+
   end
+
 end
