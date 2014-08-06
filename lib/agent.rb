@@ -99,6 +99,10 @@ class Agent
       end
     end
     log :open, agent_name, credentials
+  rescue => e
+    log :error_on_open, e.class, e.message, e.backtrace.join("\n\t")
+    change_connection_status connected: false
+    stop_pinging
   end
 
   def on_close
@@ -187,7 +191,7 @@ class Agent
     log "Info: #{Docker.info.inspect}"
     true
   rescue => e
-    log "Error connecting to docker", e.message
+    log "Error connecting to docker", e.class, e.message
     false
   end
 
