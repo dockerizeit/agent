@@ -5,7 +5,7 @@ module Service
       [:tunnels]
     end
 
-    def start(tunnel_id:, container_id:, source_port:, ssh_port:, **_unused_session)
+    def start(tunnel_id:, container_id:, source_port:, ssh_port:, public_port:, **_unused_session)
       ssh_server = ENV['TUNNEL_SERVER']
       name = "tunnel-client-#{tunnel_id}"
       source_container = Docker::Container.get container_id
@@ -18,7 +18,8 @@ module Service
           "TUNNEL_SERVER=#{ssh_server}",
           "TUNNEL_PORT=#{ssh_port}",
           "SERVICE_HOST=#{source_container.json['NetworkSettings']['IPAddress']}",
-          "SERVICE_PORT=#{source_port}"
+          "SERVICE_PORT=#{source_port}",
+          "TUNNEL_PUBLIC_PORT=#{public_port}"
         ]
       }
       container = Docker::Container.create create_params
