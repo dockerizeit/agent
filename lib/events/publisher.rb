@@ -26,6 +26,7 @@ class Events::Publisher
       when 'die' then handle_die(event)
       when 'stop' then handle_stop(event)
       when 'restart' then handle_restart(event)
+      when 'destroy' then handle_destroy(event)
       else
         puts "Unknown event: #{event.inspect}"
       end
@@ -62,6 +63,12 @@ class Events::Publisher
   # For instance; docker restart STARTED_CONTAINER
   def handle_restart(event)
     @bus.request 'containers', 'restarted', event: event.json, container: container_info(event.id)
+  end
+
+  # Event fired when restarting an existing container
+  # For instance; docker restart DESTROY_CONTAINER
+  def handle_destroy(event)
+    @bus.request 'containers', 'destroyed', event: event.json, container: container_info(event.id)
   end
 
   private
